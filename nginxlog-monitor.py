@@ -28,7 +28,7 @@ MONTHLIST = {
 }
 
 def getNginxLog(ts):
-    pf = /home/web_access_20130821.log
+    pf = '/home/web_access_20130821.log'
     now = datetime.datetime.now()
     curtime = datetime.datetime(now.year, now.month, now.day, now.hour, now.minute, now.second)
     n = 1
@@ -73,11 +73,10 @@ def sendToGraphite():
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     sock.connect(('127.0.0.1', 2003))
     data, stf = countLogCode()
-    conten = []
+    content = []
     for k, v in data.items():
         content.append("http.code_%d %d %s\n" % (k, v, stf)
-    message = '\n'.join(content) + '\n'
-    sock.sendall(message)
+    sock.send(content)
 
 def main():
     while True:
