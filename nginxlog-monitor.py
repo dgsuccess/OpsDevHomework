@@ -11,8 +11,8 @@ import time
 #dirname = path.dirname(__file__)
 #lib_dir = path.abspath(dirname)
 #sys.path.append(lib_dir)
-
-MONTHLIST = {
+ 
+MOUTHLIST = {
     'Jan':1,
     'Feb':2,
     'Mar':3,
@@ -37,7 +37,10 @@ def getNginxLog(ts):
         log = Popen('tail -n %s %s' % (lines, pf), shell=True, stdout=PIPE)
         stdout, stderr = log.communicate()
         for i in stdout.split('\n'):
-            lt = i.strip().split()[3][1:]
+            try:
+                lt = i.strip().split()[3][1:]
+            except:
+                continue
             day, mouth, other = lt.split('/')
             year, hour, minute, second = other.split(':')
             logtime = datetime.datetime(int(year), int(MOUTHLIST[mouth]), int(day), int(hour), int(minute), int(second))
@@ -54,11 +57,14 @@ def countLogCode():
     log, curtime, stf = getNginxLog(60)
     data = {}
     for i in log.split('\n'):
-        lt = i.strip().split()[3][1:]
+        try:
+            lt = i.strip().split()[3][1:]
+        except:
+            continue
         day, mouth, other = lt.split('/')
         year, hour, minute, second = other.split(':')
         logtime = datetime.datetime(int(year), int(MOUTHLIST[mouth]), int(day), int(hour), int(minute), int(second))
-        if curtime - logtime > datetime.timedelta(seconds=60):
+        if curtime - logtime < datetime.timedelta(seconds=60):
             continue
         else:
             k = i.strip().split()[8]
@@ -75,8 +81,9 @@ def sendToGraphite():
     data, stf = countLogCode()
     content = []
     for k, v in data.items():
-        content.append("http.code_%d %d %s\n" % (k, v, stf)
-    sock.send(content)
+        content.append("http.code_%s %d %s\n" % (k, v, stf))
+#    sock.send(content)
+    print content
 
 def main():
     while True:
